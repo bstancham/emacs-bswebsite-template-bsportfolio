@@ -1,0 +1,108 @@
+/* designed for mobile first - media queries at bottom of file makes some
+   changes for larger screens */
+
+html {
+    font-family: arial;
+}
+
+body {
+    color: black;
+    background-color: white;
+}
+
+span.artwork-title {
+    font-weight: bold;
+}
+
+/*-------------------------- HEADER MENU ---------------------------*/
+
+header.site-header div.menu-bar {
+    border-bottom: 1px solid;
+    margin: 0;
+}
+
+header.site-header div.gallery-pagination {
+    border-bottom: 1px solid;
+    margin: 0;
+}
+
+header.site-header span.site-title {
+    font-weight: bold;
+    font-size: 1.5em;
+    display: inline-block;
+}
+
+header.site-header .nav-menu-pages {
+    display: inline-block;
+}
+
+header.site-header li.header-menu-item {
+    display: inline-block;
+}
+
+/* insert vertical bar before each static page link */
+header.site-header li.header-menu-item::before {
+    content: " | ";
+}
+
+header.site-header a {
+    text-decoration: none;
+}
+
+header.site-header a:link {
+    color: black;
+}
+
+header.site-header a:visited {
+    color: black;
+}
+
+header.site-header a:hover {
+    color: #088;
+}
+
+header.site-header a:active {
+    color: black;
+}
+
+header.site-header span.gallery-pagination-link {
+    font-weight: bold;
+}
+
+header.site-header span.gallery-pagination-inactive {
+    color: grey;
+}
+
+/*----------------------- FOR LARGER SCREENS -----------------------*/
+/*---------------- menu is pinned to top of screen -----------------*/
+/*--------- front page image-grid instead of vertical list ---------*/
+
+@media only screen and (min-width: 768px) {
+
+    body {
+        padding-left: 3%;
+        padding-right: 3%;
+        padding-top: 3rem; /* leave room for the menu bar */
+    }
+
+    div.image-grid {
+        display: inline-block;
+        vertical-align: middle;
+        /* border: 10px; */
+        padding: 10px;
+    }
+
+    header.site-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        /* margin: 0; */
+        /* padding-bottom: 0; */
+        display: block;
+        padding-left: 3%;
+        padding-right: 3%;
+        background-color: white;
+    }
+
+}

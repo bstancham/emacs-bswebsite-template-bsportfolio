@@ -1,0 +1,54 @@
+* BSPortfolio: template for BSWebsite Website Builder
+
+A clean looking portfolio website template.
+
+* Sample ~setup.el~ File
+
+Edit this and put it in the top level directory of your website project.
+
+#+BEGIN_SRC elisp
+;;;;;;;;;;;;;;;;;;;; STANDARD BSWEBSITE VARIABLES ;;;;;;;;;;;;;;;;;;;;
+
+(setf bswebsite-title "My Website")
+
+(setf bswebsite-image-size-default 1000)
+
+(setf bswebsite-image-size-thumb 300)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;; TEMPLATE SETUP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(bswebsite-load-template "templates/bsportfolio")
+
+(setf bswebsite-archive-database-file "~/path/to/sqlite/database")
+
+(defun bswebsite-header-menu-links ()
+  '(("Text" "link.html")
+    ("Text" "link.html")
+    ("Text" "link.html")))
+
+(defun bswebsite-gallery-pages ()
+  '(("source_file.el" "image.jpg" "Text to appear underneath")
+    ("source_file.el" "image.jpg" "Text to appear underneath")
+    ("source_file.el" "image.jpg" "Text to appear underneath")
+    ("source_file.el" "image.jpg" "Text to appear underneath")
+    ("source_file.el" "image.jpg" "Text to appear underneath")))
+#+END_SRC
+
+NOTES:
+- image filenames without path - bswebsite assumes that they are in ~src/resrc~
+
+* Dependencies
+- emacs version 29 or higher (for sqlite)
+- bswebsite.el
+- bsarchive.el
+- imagemagick
+- exiftool
+
+Also, you will need to have resources/artworks catalogued in an sqlite database
+with the following schema:
+
+: CREATE TABLE documents (url text, artwork_ids text, keywords text);
+: CREATE TABLE artwork(uid text, title text, date text, dimensions text, media text, description text, note
+
+* JOBS TO DO
+** image-grid fixed width & height
