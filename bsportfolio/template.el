@@ -1,8 +1,5 @@
 ;;;;;;;; THE FOLLOWING SHOULD BE REDEFINED IN YOUR SETUP FILE ;;;;;;;;
 
-;; path to archive database
-(setf bswebsite-archive-database-file nil)
-
 (defun bswebsite-header-menu-links ()
   "Should return a list of lists defining items to appear in the header-menu, to
 appear at the top of every page of the website.
@@ -90,7 +87,6 @@ Returns nil if current source file is not a gallery page."
 
 (defun bswebsite-make-gallery-pagination ()
   (let ((link-urls (bswebsite-get-pagination-link-urls)))
-    ;; (insert (format "<p>pagination link urls: %s</p>\n" link-urls))
     (when link-urls
       (let ((prev-url (pop link-urls))
             (next-url (pop link-urls)))
@@ -134,15 +130,13 @@ Gets the list of gallery pages, images and links from bswebsite-gallery-pages"
     (while gallery-pages
       (let* ((item (pop gallery-pages))
              (link-url (file-name-with-extension (pop item) "html"))
-             (image-url (bswebsite-resize-image-thumbnail
-                         (file-name-concat "resrc" (pop item))))
-             (text (pop item)))
-        (insert "<div class=\"image-grid\">\n")
+             (image-url (bswebsite-resize-image-thumbnail (pop item)))
+             (label-text (pop item)))
+        (insert "<div class=\"image-grid-item\">\n")
         (insert (format "<a href='%s'>\n" link-url))
         (insert (format "<img src=\"%s\"/>\n" image-url))
-        (insert "</a>\n")
-        (insert "<br/>")
-        (insert (format "%s\n" text))
+        (insert "</a><br/>\n")
+        (insert (format "%s\n" label-text))
         (insert "</div>\n")))))
 
 (defun bswebsite-artwork-get (db field artwork-id)
@@ -158,18 +152,35 @@ so long as there are no duplicate UIDs in the database."
       (setq output (car (car output))))
     output))
 
-(defun bswebsite-artwork-insert-info (image-filename)
-  (let* ((image-url (file-name-concat "resrc" image-filename))
-         (archive-id (bsarchive-exif-get-uids (file-name-concat
-                                               (bswebsite-src-dir)
-                                               image-url)))
-         (db (sqlite-open bswebsite-archive-database-file)))
-    (insert "<p>\n")
-    ;; (insert (format "archive uid: %s<br/>\n" archive-id))
-    (let ((artwork-id (sqlite-select db (concat "SELECT artwork_ids FROM documents WHERE rowid=" (car archive-id) ";"))))
-      (when artwork-id
-        (setq artwork-id (car (car artwork-id)))
-        ;; (insert (format "artwork uid: %s<br/>\n" artwork-id))
+(defun bswebsite-get-artwork-id (image-filename)
+  "Returns nil, if no artwork-ids found. If multiple artwork-ids, first one is returned."
+  (let ((artwork-id "ARTWORK-ID-NOT-FOUND"))
+    (bswebsite-with-error-handling
+     "get-artwork-id"
+     (format "IMG-FILENAME=%s: " image-filename)
+     
+     (let* ((image-url (file-name-concat "resrc" image-filename))
+            (archive-id (bsarchive-exif-get-uids (file-name-concat
+                                                  (bswebsite-src-dir)
+                                                  image-url)))
+            (db (sqlite-open bswebsite-archive-database-file)))
+       (setf artwork-id
+             (sqlite-select
+              db
+              (concat "SELECT artwork_ids FROM documents WHERE rowid=" (car archive-id) ";")))
+       (sqlite-close db)
+
+       ;; sqlite returns a list of lists - just take the first item
+       (if (listp artwork-id)
+           (setf artwork-id (string-trim (car (car artwork-id)))))))
+    ;; return
+    artwork-id))
+
+(defun bswebsite-artwork-insert-info (artwork-id)
+  (push "artwork-insert-info" bswebsite-function-call-stack)
+  (when artwork-id
+      (let* ((db (sqlite-open bswebsite-archive-database-file)))
+        (insert "<p>\n")
         (let ((value (bswebsite-artwork-get db "title" artwork-id)))
           (when (not (string-empty-p value))
             (insert (format "<span class=\"artwork-title\">%s</span><br/>\n" value))))
@@ -181,14 +192,41 @@ so long as there are no duplicate UIDs in the database."
             (insert (format "%s<br/>\n" value))))
         (let ((value (bswebsite-artwork-get db "media" artwork-id)))
           (when (not (string-empty-p value))
-            (insert (format "%s<br/>\n" value))))))
-    (insert "</p>\n")
-    (sqlite-close db)))
+            (insert (format "%s<br/>\n" value))))
+        (insert "</p>\n")
+        (sqlite-close db)))
+  (pop bswebsite-function-call-stack))
 
-(defun bswebsite-make-gallery-image (image-url)
-  "Insert image (default size), with standard artwork info underneath."
+(defun bswebsite-make-standard-image (image-url)
   (insert "<p>\n")
   (insert (format "<img src=\"%s\"/>\n"
-                  (bswebsite-resize-image-default (file-name-concat "resrc" image-url))))
-  (insert "<\p>\n")
-  (bswebsite-artwork-insert-info image-url))
+                  (bswebsite-resize-image-default image-url)))
+  (insert "<\p>\n"))
+
+(defun bswebsite-make-gallery-images (&rest image-urls)
+  "Insert each image (default size), with standard artwork info underneath.
+For consecutive images of the same artwork, only show info after last
+image in sequence."
+  (let ((last-id nil)
+        (current-id nil))
+
+    (dolist (url image-urls)
+      (bswebsite-with-error-handling
+       "make-gallery-images"
+       (format "IMAGE=%s: " url)
+       
+       (setf current-id (bswebsite-get-artwork-id url))
+
+       ;; check whether different artwork from last image - if so,
+       ;; insert artwork info for previous image before next image
+       (if last-id
+           (if (not (string-equal last-id current-id))
+               (bswebsite-artwork-insert-info last-id)))
+
+       (bswebsite-make-standard-image url))
+
+      (setf last-id current-id))
+
+    ;; insert info for last image
+    (if last-id
+        (bswebsite-artwork-insert-info last-id))))

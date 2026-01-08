@@ -2,6 +2,10 @@
 
 A clean looking portfolio website template.
 
+The homepage features a grid of images, each linking to a 'gallery' page.
+
+A horizontally oriented menu of links also appears at the top of every page.
+
 * Sample ~setup.el~ File
 
 Edit this and put it in the top level directory of your website project.
@@ -15,11 +19,11 @@ Edit this and put it in the top level directory of your website project.
 
 (setf bswebsite-image-size-thumb 300)
 
+(setf bswebsite-archive-database-file "~/path/to/sqlite/database")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; TEMPLATE SETUP ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (bswebsite-load-template "templates/bsportfolio")
-
-(setf bswebsite-archive-database-file "~/path/to/sqlite/database")
 
 (defun bswebsite-header-menu-links ()
   '(("Text" "link.html")
@@ -48,7 +52,11 @@ Also, you will need to have resources/artworks catalogued in an sqlite database
 with the following schema:
 
 : CREATE TABLE documents (url text, artwork_ids text, keywords text);
-: CREATE TABLE artwork(uid text, title text, date text, dimensions text, media text, description text, note
+: CREATE TABLE artwork(uid text, title text, date text, dimensions text, media text, description text, notes text);
 
 * JOBS TO DO
 ** image-grid fixed width & height
+In template.el use imagemagick to determine width of image thumbnail and add
+padding left and right as required. I can't find any sensible way to get items
+fixed on horizontal grid lines and still have text aligned to left-hand edge of
+image - the text always gets centred too!

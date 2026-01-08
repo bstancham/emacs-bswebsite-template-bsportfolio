@@ -82,16 +82,10 @@ header.site-header span.gallery-pagination-inactive {
     body {
         padding-left: 3%;
         padding-right: 3%;
-        padding-top: 3rem; /* leave room for the menu bar */
+        padding-top: 3rem; /* leave room for fixed menu bar */
     }
 
-    div.image-grid {
-        display: inline-block;
-        vertical-align: middle;
-        /* border: 10px; */
-        padding: 10px;
-    }
-
+    /* menu bar fixed at top of screen */
     header.site-header {
         position: fixed;
         top: 0;
@@ -103,6 +97,13 @@ header.site-header span.gallery-pagination-inactive {
         padding-left: 3%;
         padding-right: 3%;
         background-color: white;
+    }
+
+    /* homepage links appear as image grid instead of vertical list */
+    div.image-grid-item {
+        display: inline-block;
+        vertical-align: middle;
+        padding: 10px;
     }
 
 }
